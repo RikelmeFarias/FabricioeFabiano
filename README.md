@@ -1,2 +1,1146 @@
 # FabricioeFabiano
 Show_receitas_despesas
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banda Fabrício e Fabiano - Controle Financeiro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-size: 16px;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0;
+            background: white;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 20px 15px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .status-bar {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+            background: #27ae60;
+            color: white;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            overflow-x: auto;
+            border-bottom: 2px solid #e9ecef;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .tab {
+            padding: 15px 20px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: #6c757d;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            min-width: 120px;
+            text-align: center;
+        }
+        
+        .tab:hover, .tab:active {
+            background: #e9ecef;
+            color: #495057;
+        }
+        
+        .tab.active {
+            color: #2c3e50;
+            border-bottom-color: #3498db;
+            background: white;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 15px;
+            min-height: calc(100vh - 140px);
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px 15px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .card.green {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .card.orange {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+        
+        .card.red {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        }
+        
+        .card h3 {
+            font-size: 0.9em;
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+        
+        .card .value {
+            font-size: 1.5em;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        
+        .card .subtext {
+            font-size: 0.8em;
+            margin-top: 5px;
+            opacity: 0.8;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .section-header {
+            background: #f8f9fa;
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            font-weight: 600;
+            color: #2c3e50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .section-content {
+            padding: 15px;
+        }
+        
+        .show-item {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            padding: 15px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        
+        .show-item.novo {
+            animation: slideIn 0.5s ease;
+            border-color: #27ae60;
+            background: #d4edda;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .show-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        
+        .show-title {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 1em;
+            flex: 1;
+            margin-right: 10px;
+        }
+        
+        .show-value {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #27ae60;
+            white-space: nowrap;
+        }
+        
+        .show-info {
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-bottom: 8px;
+        }
+        
+        .show-date {
+            font-weight: 600;
+            color: #3498db;
+        }
+        
+        .status {
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 0.75em;
+            font-weight: bold;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+        
+        .status.confirmado {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.pendente {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status.cancelado {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .alert {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+        
+        .alert.danger {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .alert.success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        
+        .alert h4 {
+            margin-bottom: 8px;
+            font-size: 1em;
+        }
+        
+        .alert ul {
+            margin-left: 15px;
+            margin-top: 8px;
+        }
+        
+        .alert li {
+            margin-bottom: 5px;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .input-group input, .input-group select, .input-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+        
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: background 0.3s ease;
+            margin-bottom: 10px;
+        }
+        
+        .btn:hover, .btn:active {
+            background: #2980b9;
+        }
+        
+        .btn.small {
+            width: auto;
+            padding: 8px 15px;
+            font-size: 0.9em;
+            margin: 5px 5px 5px 0;
+        }
+        
+        .btn.danger {
+            background: #e74c3c;
+        }
+        
+        .btn.danger:hover {
+            background: #c0392b;
+        }
+        
+        .btn.success {
+            background: #27ae60;
+        }
+        
+        .btn.success:hover {
+            background: #229954;
+        }
+        
+        .floating-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 1.5em;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        
+        .floating-btn:hover {
+            transform: scale(1.1);
+            background: #2980b9;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .close {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #aaa;
+        }
+        
+        .close:hover {
+            color: #333;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: #27ae60;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            z-index: 3000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.error {
+            background: #e74c3c;
+        }
+        
+        .notification.warning {
+            background: #f39c12;
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 480px) {
+            .header {
+                padding: 15px 10px;
+            }
+            
+            .header h1 {
+                font-size: 1.5em;
+            }
+            
+            .tab-content {
+                padding: 10px;
+            }
+            
+            .summary-cards {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            
+            .card {
+                padding: 15px 10px;
+                min-height: 100px;
+            }
+            
+            .card .value {
+                font-size: 1.3em;
+            }
+            
+            .show-item {
+                padding: 12px;
+            }
+            
+            .section-content {
+                padding: 10px;
+            }
+            
+            .floating-btn {
+                width: 50px;
+                height: 50px;
+                bottom: 15px;
+                right: 15px;
+                font-size: 1.2em;
+            }
+            
+            .notification {
+                right: 10px;
+                left: 10px;
+                width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="status-bar" id="statusBar">🟢 Sistema Ativo</div>
+            <h1>🎵 Banda Fabrício e Fabiano</h1>
+            <p>Controle Financeiro Colaborativo</p>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="abrirAba('dashboard')">📊 Resumo</button>
+            <button class="tab" onclick="abrirAba('shows')">📅 Shows</button>
+            <button class="tab" onclick="abrirAba('financeiro')">💰 Financeiro</button>
+            <button class="tab" onclick="abrirAba('custos')">📋 Custos</button>
+            <button class="tab" onclick="abrirAba('alertas')">⚠️ Alertas</button>
+        </div>
+        
+        <!-- Dashboard -->
+        <div id="dashboard" class="tab-content active">
+            <div class="summary-cards">
+                <div class="card green">
+                    <h3>Saldo Atual</h3>
+                    <div class="value" id="saldoAtual">R$ 3.000</div>
+                    <div class="subtext">Disponível hoje</div>
+                </div>
+                <div class="card">
+                    <h3>Próximo Show</h3>
+                    <div class="value" id="proximoShow">12/07</div>
+                    <div class="subtext" id="proximoShowNome">Sofia Flecheiras</div>
+                </div>
+                <div class="card orange">
+                    <h3>Receita Julho</h3>
+                    <div class="value" id="receitaJulho">R$ 9.100</div>
+                    <div class="subtext" id="showsJulho">6 shows</div>
+                </div>
+                <div class="card red">
+                    <h3>Débitos</h3>
+                    <div class="value">R$ 600</div>
+                    <div class="subtext">URGENTE</div>
+                </div>
+            </div>
+            
+            <div class="alert danger">
+                <h4>🚨 Ações Urgentes</h4>
+                <ul>
+                    <li><strong>Quitar débitos:</strong> R$ 600 (Raull + Niell)</li>
+                    <li><strong>Definir valor:</strong> Amostra Cultural Picos</li>
+                    <li><strong>Renegociar:</strong> Chef Gourmet Fortaleza</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Shows -->
+        <div id="shows" class="tab-content">
+            <div class="section">
+                <div class="section-header">
+                    <span>📅 Próximos Shows</span>
+                    <button class="btn small" onclick="abrirModal('addShowModal')">+ Adicionar</button>
+                </div>
+                <div class="section-content" id="listaShows">
+                    <!-- Shows serão carregados aqui -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Financeiro -->
+        <div id="financeiro" class="tab-content">
+            <div class="summary-cards">
+                <div class="card green">
+                    <h3>A Receber</h3>
+                    <div class="value" id="totalReceber">R$ 32.000</div>
+                    <div class="subtext">Shows confirmados</div>
+                </div>
+                <div class="card red">
+                    <h3>A Pagar</h3>
+                    <div class="value">R$ 600</div>
+                    <div class="subtext">Débitos pendentes</div>
+                </div>
+            </div>
+            
+            <div class="alert danger">
+                <h4>🚨 Débitos Pendentes</h4>
+                <ul>
+                    <li><strong>Raull (Iluminação):</strong> R$ 400,00<br>
+                        <small>PIX: 85981010127</small></li>
+                    <li><strong>Niell (Atraso cachê):</strong> R$ 200,00<br>
+                        <small>PIX: 88999954953</small></li>
+                </ul>
+            </div>
+            
+            <div class="alert success">
+                <h4>✅ A Receber (Shows Anteriores)</h4>
+                <ul>
+                    <li><strong>Prefeitura de Itapipoca:</strong> R$ 2.000,00</li>
+                    <li><strong>Haras Don Pedro:</strong> R$ 600,00</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Custos -->
+        <div id="custos" class="tab-content">
+            <div class="summary-cards">
+                <div class="card">
+                    <h3>Cachê/Show</h3>
+                    <div class="value">R$ 950</div>
+                    <div class="subtext">7 músicos</div>
+                </div>
+                <div class="card orange">
+                    <h3>Gasolina/Semana</h3>
+                    <div class="value">R$ 520</div>
+                    <div class="subtext">Média</div>
+                </div>
+                <div class="card red">
+                    <h3>Custos/Mês</h3>
+                    <div class="value">R$ 790</div>
+                    <div class="subtext">Operacionais</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Alertas -->
+        <div id="alertas" class="tab-content">
+            <div class="alert danger">
+                <h4>🚨 CRÍTICO - Débitos Vencidos</h4>
+                <ul>
+                    <li><strong>Raull (Iluminação):</strong> R$ 400,00<br>
+                        <small>PIX: 85981010127</small></li>
+                    <li><strong>Niell (Atraso cachê):</strong> R$ 200,00<br>
+                        <small>PIX: 88999954953</small></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Botão Flutuante -->
+    <button class="floating-btn" onclick="abrirModal('quickModal')" title="Ações Rápidas">⚡</button>
+    
+    <!-- Modal Adicionar Show -->
+    <div id="addShowModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="fecharModal('addShowModal')">&times;</span>
+            <h3 style="margin-bottom: 20px;">📅 Adicionar Novo Show</h3>
+            
+            <div class="input-group">
+                <label>Data do Show</label>
+                <input type="date" id="novaData">
+            </div>
+            
+            <div class="input-group">
+                <label>Nome do Evento</label>
+                <input type="text" id="novoEvento" placeholder="Ex: Festa de São João">
+            </div>
+            
+            <div class="input-group">
+                <label>Local</label>
+                <input type="text" id="novoLocal" placeholder="Ex: Itapipoca">
+            </div>
+            
+            <div class="input-group">
+                <label>Valor (R$)</label>
+                <input type="number" id="novoValor" placeholder="Ex: 1800">
+            </div>
+            
+            <div class="input-group">
+                <label>Status</label>
+                <select id="novoStatus">
+                    <option value="confirmado">✅ Confirmado</option>
+                    <option value="pendente">⏳ Pendente</option>
+                    <option value="cancelado">❌ Cancelado</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label>Observações</label>
+                <textarea id="novaObs" placeholder="Ex: Pagamento no local" rows="3"></textarea>
+            </div>
+            
+            <button class="btn" onclick="adicionarShow()">💾 Salvar Show</button>
+        </div>
+    </div>
+    
+    <!-- Modal Ações Rápidas -->
+    <div id="quickModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="fecharModal('quickModal')">&times;</span>
+            <h3 style="margin-bottom: 20px;">⚡ Ações Rápidas</h3>
+            
+            <button class="btn" onclick="abrirModal('addShowModal'); fecharModal('quickModal')">
+                📅 Adicionar Show
+            </button>
+            
+            <button class="btn success" onclick="salvarDados(); fecharModal('quickModal')">
+                💾 Salvar Dados
+            </button>
+            
+            <button class="btn" onclick="gerarRelatorio(); fecharModal('quickModal')">
+                📊 Gerar Relatório
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Dados da banda
+        let dadosBanda = {
+            shows: [
+                {id: 1, data: '2025-07-12', evento: 'Evento Sofia Flecheiras (saldo)', local: 'Flecheiras', valor: 800, status: 'pendente', obs: 'R$ 800 saldo a receber'},
+                {id: 2, data: '2025-07-12', evento: 'Córrego dos Furtados', local: 'Trairi', valor: 1800, status: 'confirmado', obs: 'Herbinho - Dinheiro no local'},
+                {id: 3, data: '2025-07-13', evento: 'Veras Bar Ladeira', local: 'Itapipoca', valor: 1200, status: 'cancelado', obs: 'CANCELADO'},
+                {id: 4, data: '2025-07-19', evento: 'Chitão de Trairi', local: 'Trairi', valor: 2700, status: 'confirmado', obs: 'Italo - Dinheiro no local'},
+                {id: 5, data: '2025-07-24', evento: 'Amostra Cultural Picos', local: 'Picos', valor: 0, status: 'pendente', obs: 'VALOR NÃO DEFINIDO'},
+                {id: 6, data: '2025-07-26', evento: 'Restaurante Caravela', local: 'Flecheiras', valor: 1400, status: 'confirmado', obs: 'Leo Gadelha - No local'},
+                {id: 7, data: '2025-07-27', evento: 'Buteco Irmãos Forrozeiros', local: 'Trairi', valor: 1200, status: 'confirmado', obs: 'PIX em 28/07'}
+            ],
+            saldoAtual: 3000,
+            ultimaAtualizacao: new Date().toISOString()
+        };
+        
+        // Carregar dados do localStorage
+        function carregarDados() {
+            const dadosSalvos = localStorage.getItem('bandaDados');
+            if (dadosSalvos) {
+                dadosBanda = JSON.parse(dadosSalvos);
+            }
+            atualizarInterface();
+        }
+        
+        // Salvar dados no localStorage
+        function salvarDados() {
+            dadosBanda.ultimaAtualizacao = new Date().toISOString();
+            localStorage.setItem('bandaDados', JSON.stringify(dadosBanda));
+            mostrarNotificacao('💾 Dados salvos com sucesso!', 'success');
+        }
+        
+        // Atualizar interface
+        function atualizarInterface() {
+            atualizarDashboard();
+            carregarShows();
+            atualizarFinanceiro();
+        }
+        
+        // Atualizar dashboard
+        function atualizarDashboard() {
+            document.getElementById('saldoAtual').textContent = formatarValor(dadosBanda.saldoAtual);
+            
+            // Calcular receita de julho
+            let receitaJulho = 0;
+            let showsJulho = 0;
+            
+            dadosBanda.shows.forEach(show => {
+                if ((show.status === 'confirmado' || show.status === 'pendente') && show.valor > 0) {
+                    const data = new Date(show.data);
+                    const mes = data.getMonth() + 1;
+                    
+                    if (mes === 7) {
+                        receitaJulho += show.valor;
+                        showsJulho++;
+                    }
+                }
+            });
+            
+            document.getElementById('receitaJulho').textContent = formatarValor(receitaJulho);
+            document.getElementById('showsJulho').textContent = `${showsJulho} shows`;
+            
+            // Próximo show
+            const proximoShow = dadosBanda.shows
+                .filter(show => new Date(show.data) >= new Date() && show.status !== 'cancelado')
+                .sort((a, b) => new Date(a.data) - new Date(b.data))[0];
+            
+            if (proximoShow) {
+                document.getElementById('proximoShow').textContent = formatarData(proximoShow.data);
+                document.getElementById('proximoShowNome').textContent = proximoShow.evento;
+            }
+        }
+        
+        // Carregar shows
+        function carregarShows() {
+            const lista = document.getElementById('listaShows');
+            lista.innerHTML = '';
+            
+            const showsOrdenados = dadosBanda.shows.sort((a, b) => new Date(a.data) - new Date(b.data));
+            
+            showsOrdenados.forEach(show => {
+                const div = document.createElement('div');
+                div.className = 'show-item';
+                div.innerHTML = `
+                    <div class="show-header">
+                        <div class="show-title">${show.evento}</div>
+                        <div class="show-value">${formatarValor(show.valor)}</div>
+                    </div>
+                    <div class="show-info">
+                        📅 <span class="show-date">${formatarData(show.data)}</span> • 📍 ${show.local}
+                    </div>
+                    <div class="show-info" style="margin-bottom: 10px;">
+                        <span class="status ${show.status}">${show.status.toUpperCase()}</span>
+                    </div>
+                    <div class="show-info" style="font-size: 0.85em; color: #666;">
+                        ${show.obs}
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <button class="btn small" onclick="editarShow(${show.id})">✏️ Editar</button>
+                        <button class="btn small danger" onclick="excluirShow(${show.id})">🗑️ Excluir</button>
+                    </div>
+                `;
+                lista.appendChild(div);
+            });
+        }
+        
+        // Atualizar financeiro
+        function atualizarFinanceiro() {
+            const totalReceber = dadosBanda.shows
+                .filter(show => show.status === 'confirmado' && show.valor > 0)
+                .reduce((total, show) => total + show.valor, 0);
+            
+            document.getElementById('totalReceber').textContent = formatarValor(totalReceber);
+        }
+        
+        // Formatar valor
+        function formatarValor(valor) {
+            if (valor === 0) return 'A DEFINIR';
+            return 'R$ ' + valor.toLocaleString('pt-BR');
+        }
+        
+        // Formatar data
+        function formatarData(dataStr) {
+            const data = new Date(dataStr + 'T00:00:00');
+            return data.toLocaleDateString('pt-BR', { 
+                day: '2-digit', 
+                month: '2-digit'
+            });
+        }
+        
+        // Abrir aba
+        function abrirAba(nomeAba) {
+            // Esconder todas as abas
+            const abas = document.getElementsByClassName('tab-content');
+            for (let i = 0; i < abas.length; i++) {
+                abas[i].classList.remove('active');
+            }
+            
+            // Remover classe active de todos os botões
+            const botoes = document.getElementsByClassName('tab');
+            for (let i = 0; i < botoes.length; i++) {
+                botoes[i].classList.remove('active');
+            }
+            
+            // Mostrar aba selecionada
+            document.getElementById(nomeAba).classList.add('active');
+            event.target.classList.add('active');
+            
+            // Carregar conteúdo se necessário
+            if (nomeAba === 'shows') {
+                carregarShows();
+            }
+        }
+        
+        // Abrir modal
+        function abrirModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+            
+            // Preencher data atual se for modal de adicionar show
+            if (modalId === 'addShowModal') {
+                document.getElementById('novaData').value = new Date().toISOString().split('T')[0];
+            }
+        }
+        
+        // Fechar modal
+        function fecharModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            
+            // Limpar campos
+            if (modalId === 'addShowModal') {
+                document.getElementById('novaData').value = '';
+                document.getElementById('novoEvento').value = '';
+                document.getElementById('novoLocal').value = '';
+                document.getElementById('novoValor').value = '';
+                document.getElementById('novaObs').value = '';
+                document.getElementById('novoStatus').value = 'confirmado';
+            }
+        }
+        
+        // Adicionar novo show
+        function adicionarShow() {
+            const data = document.getElementById('novaData').value;
+            const evento = document.getElementById('novoEvento').value;
+            const local = document.getElementById('novoLocal').value;
+            const valor = parseFloat(document.getElementById('novoValor').value) || 0;
+            const status = document.getElementById('novoStatus').value;
+            const obs = document.getElementById('novaObs').value || 'Adicionado manualmente';
+
+            if (!data || !evento || !local) {
+                alert('⚠️ Por favor, preencha os campos obrigatórios:\n• Data\n• Nome do Evento\n• Local');
+                return;
+            }
+
+            const novoShow = {
+                id: Date.now(),
+                data: data,
+                evento: evento,
+                local: local,
+                valor: valor,
+                status: status,
+                obs: obs
+            };
+
+            dadosBanda.shows.push(novoShow);
+            salvarDados();
+            atualizarInterface();
+            fecharModal('addShowModal');
+            
+            // Animar o novo item
+            setTimeout(() => {
+                const novoItem = document.querySelector(`[data-show-id="${novoShow.id}"]`);
+                if (novoItem) {
+                    novoItem.classList.add('novo');
+                }
+            }, 100);
+            
+            mostrarNotificacao('✅ Show adicionado com sucesso!', 'success');
+        }
+        
+        // Editar show
+        function editarShow(id) {
+            const show = dadosBanda.shows.find(s => s.id === id);
+            if (!show) return;
+            
+            const novoEvento = prompt(`📝 Editar nome do evento:`, show.evento);
+            if (novoEvento && novoEvento !== show.evento) {
+                show.evento = novoEvento;
+                salvarDados();
+                atualizarInterface();
+                mostrarNotificacao('✅ Show atualizado!', 'success');
+                return;
+            }
+            
+            const novoValor = prompt(`💰 Editar valor (apenas números):`, show.valor);
+            if (novoValor !== null && novoValor !== '') {
+                show.valor = parseFloat(novoValor) || 0;
+                salvarDados();
+                atualizarInterface();
+                mostrarNotificacao('✅ Show atualizado!', 'success');
+                return;
+            }
+            
+            const novoStatus = prompt(`📊 Editar status:\n1 = confirmado\n2 = pendente\n3 = cancelado\n\nDigite 1, 2 ou 3:`);
+            if (novoStatus === '1') show.status = 'confirmado';
+            else if (novoStatus === '2') show.status = 'pendente';
+            else if (novoStatus === '3') show.status = 'cancelado';
+            
+            if (['1', '2', '3'].includes(novoStatus)) {
+                salvarDados();
+                atualizarInterface();
+                mostrarNotificacao('✅ Show atualizado!', 'success');
+            }
+        }
+        
+        // Excluir show
+        function excluirShow(id) {
+            const show = dadosBanda.shows.find(s => s.id === id);
+            if (!show) return;
+            
+            if (confirm(`🗑️ Tem certeza que deseja excluir o show:\n\n"${show.evento}"\n${formatarData(show.data)} - ${show.local}?`)) {
+                dadosBanda.shows = dadosBanda.shows.filter(s => s.id !== id);
+                salvarDados();
+                atualizarInterface();
+                mostrarNotificacao('✅ Show excluído!', 'success');
+            }
+        }
+        
+        // Mostrar notificação
+        function mostrarNotificacao(mensagem, tipo = 'success') {
+            // Remover notificação existente
+            const existente = document.querySelector('.notification');
+            if (existente) {
+                existente.remove();
+            }
+            
+            const notificacao = document.createElement('div');
+            notificacao.className = `notification ${tipo}`;
+            notificacao.textContent = mensagem;
+            document.body.appendChild(notificacao);
+            
+            // Mostrar
+            setTimeout(() => {
+                notificacao.classList.add('show');
+            }, 100);
+            
+            // Esconder após 3 segundos
+            setTimeout(() => {
+                notificacao.classList.remove('show');
+                setTimeout(() => {
+                    notificacao.remove();
+                }, 300);
+            }, 3000);
+        }
+        
+        // Gerar relatório
+        function gerarRelatorio() {
+            const totalReceita = dadosBanda.shows
+                .filter(show => show.status === 'confirmado' && show.valor > 0)
+                .reduce((total, show) => total + show.valor, 0);
+            
+            const showsConfirmados = dadosBanda.shows.filter(show => show.status === 'confirmado').length;
+            const showsPendentes = dadosBanda.shows.filter(show => show.status === 'pendente').length;
+            
+            const relatorio = `
+📊 RELATÓRIO FINANCEIRO
+Data: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR')}
+
+💰 RESUMO FINANCEIRO:
+• Saldo atual: ${formatarValor(dadosBanda.saldoAtual)}
+• Receita confirmada: ${formatarValor(totalReceita)}
+• Total de shows: ${dadosBanda.shows.length}
+
+📈 STATUS DOS SHOWS:
+• Confirmados: ${showsConfirmados}
+• Pendentes: ${showsPendentes}
+• Cancelados: ${dadosBanda.shows.filter(show => show.status === 'cancelado').length}
+
+🎯 PERFORMANCE:
+• Ticket médio: ${formatarValor(Math.round(totalReceita / showsConfirmados || 0))}
+• Shows por mês: ${(showsConfirmados / 2).toFixed(1)}
+            `.trim();
+            
+            alert(relatorio);
+        }
+        
+        // Navegação por swipe (mobile)
+        let startX = 0;
+        let startY = 0;
+
+        document.addEventListener('touchstart', function(e) {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+        });
+
+        document.addEventListener('touchend', function(e) {
+            if (!startX || !startY) return;
+
+            let endX = e.changedTouches[0].clientX;
+            let endY = e.changedTouches[0].clientY;
+            let diffX = startX - endX;
+            let diffY = startY - endY;
+
+            // Verificar se é um swipe horizontal
+            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+                const tabs = ['dashboard', 'shows', 'financeiro', 'custos', 'alertas'];
+                const activeTab = document.querySelector('.tab.active');
+                const currentIndex = Array.from(document.querySelectorAll('.tab')).indexOf(activeTab);
+
+                if (diffX > 0 && currentIndex < tabs.length - 1) {
+                    // Swipe left - próxima aba
+                    document.querySelectorAll('.tab')[currentIndex + 1].click();
+                } else if (diffX < 0 && currentIndex > 0) {
+                    // Swipe right - aba anterior
+                    document.querySelectorAll('.tab')[currentIndex - 1].click();
+                }
+            }
+
+            startX = 0;
+            startY = 0;
+        });
+        
+        // Fechar modal clicando fora
+        window.onclick = function(event) {
+            const modals = document.getElementsByClassName('modal');
+            for (let i = 0; i < modals.length; i++) {
+                if (event.target === modals[i]) {
+                    modals[i].style.display = 'none';
+                }
+            }
+        }
+        
+        // Simulação de atualizações colaborativas
+        function simularAtualizacoesColaborativas() {
+            setInterval(() => {
+                // 20% de chance de simular uma atualização
+                if (Math.random() < 0.2) {
+                    const acoes = [
+                        () => {
+                            // Simular novo show adicionado por outro usuário
+                            const novoShow = {
+                                id: Date.now() + Math.random(),
+                                data: '2025-08-15',
+                                evento: 'Show Colaborativo',
+                                local: 'Fortaleza',
+                                valor: 2000,
+                                status: 'pendente',
+                                obs: 'Adicionado por outro usuário'
+                            };
+                            dadosBanda.shows.push(novoShow);
+                            salvarDados();
+                            atualizarInterface();
+                            mostrarNotificacao('📥 Novo show adicionado por outro usuário!', 'success');
+                        },
+                        () => {
+                            // Simular atualização de saldo
+                            dadosBanda.saldoAtual += 500;
+                            salvarDados();
+                            atualizarInterface();
+                            mostrarNotificacao('💰 Saldo atualizado por outro usuário!', 'success');
+                        }
+                    ];
+                    
+                    const acaoAleatoria = acoes[Math.floor(Math.random() * acoes.length)];
+                    acaoAleatoria();
+                }
+            }, 30000); // A cada 30 segundos
+        }
+        
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            carregarDados();
+            
+            // Auto-save a cada 1 minuto
+            setInterval(salvarDados, 60000);
+            
+            // Simular colaboração
+            setTimeout(() => {
+                simularAtualizacoesColaborativas();
+            }, 10000);
+            
+            // Mostrar mensagem de boas-vindas
+            setTimeout(() => {
+                mostrarNotificacao('✅ Sistema iniciado! Dados sincronizados.', 'success');
+            }, 1000);
+        });
+        
+        // Prevenir perda de dados
+        window.addEventListener('beforeunload', function() {
+            salvarDados();
+        });
+        
+        // Atualizar status quando a página fica visível
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                carregarDados();
+                document.getElementById('statusBar').textContent = '🟢 Atualizado';
+                setTimeout(() => {
+                    document.getElementById('statusBar').textContent = '🟢 Sistema Ativo';
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+</html>
+        
